@@ -22,15 +22,18 @@ CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 
 
+def telegram_request(endpoint, params={}):
+    url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/' + endpoint
+    r = requests.get(url, params=params)
+    return r
+
+
 def get_updates():
     count = 0
-    url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/getUpdates'
-
     while count < 100:
         time.sleep(5)
         count += 1
-
-        r = requests.get(url)
+        r = telegram_request('getUpdates')
         print(r.status_code, r.headers['content-type'], r.encoding)
         print(r.text)
         print(r.json())
@@ -46,7 +49,8 @@ class MessageSender(object):
 
     @cherrypy.expose
     def test(self):
-        return 'test'
+        r = telegram_request('getWebhookinfo')
+        print(r.text)
 
     @cherrypy.expose
     def send(self, message=None):
@@ -55,7 +59,7 @@ class MessageSender(object):
 
     @cherrypy.expose
     def callback(self):
-        print(cherrypy.request.params)
+        print('cALLBACK', cherrypy.request.params)
 
 config = {
     'global': {
