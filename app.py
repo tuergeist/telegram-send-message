@@ -93,6 +93,6 @@ def _register_webhook():
 def register_webhook():
     _thread.start_new_thread(_register_webhook, ())
 
-register_webhook()
+#register_webhook()
 #start_thread
 cherrypy.quickstart(MessageSender())#, config=config)
