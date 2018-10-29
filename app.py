@@ -58,9 +58,11 @@ class MessageSender(object):
             raise cherrypy.HTTPError(400, message="need a message as parameter")
 
     @cherrypy.expose
+    @cherrypy.tools.json_in()
     def callback(self):
+        data = cherrypy.request.json
         print('cALLBACK')
-        print(cherrypy.request._get_dict)
+        print(data)
 
 config = {
     'global': {
