@@ -58,7 +58,7 @@ class MessageSender(object):
             raise cherrypy.HTTPError(400, message="need a message as parameter")
 
     @cherrypy.expose
-    def callback(self, ,*args, **kwargs):
+    def callback(self, *args, **kwargs):
         print('cALLBACK', cherrypy.request)
         print(args)
         print(kwargs)
