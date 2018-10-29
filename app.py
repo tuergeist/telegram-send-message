@@ -1,6 +1,7 @@
 import cherrypy
 import os
 import psycopg2
+import _thread, time
 from jinja2 import Environment, FileSystemLoader
 
 env = Environment(loader=FileSystemLoader('html'))
@@ -17,6 +18,13 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 conn.commit()
+
+def get_updates():
+    count = 0
+    while count < 5:
+        time.sleep(1)
+        count += 1
+        print(count)
 
 
 class MessageSender(object):
@@ -46,5 +54,12 @@ config = {
         'tools.staticdir.dir': 'assets',
     }
 }
+
+
+
+try:
+   _thread.start_new_thread( get_updates, () )
+except:
+   print("Error: unable to start thread")
 
 cherrypy.quickstart(MessageSender(), config=config)
