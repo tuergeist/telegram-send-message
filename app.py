@@ -58,10 +58,9 @@ class MessageSender(object):
             raise cherrypy.HTTPError(400, message="need a message as parameter")
 
     @cherrypy.expose
-    def callback(self, update_id, message):
+    def callback(self):
         print('cALLBACK')
-        print(update_id)
-        print(message)
+        print(cherrypy.request._get_dict)
 
 config = {
     'global': {
@@ -96,4 +95,4 @@ def register_webhook():
 
 register_webhook()
 #start_thread
-cherrypy.quickstart(MessageSender(), config=config)
+cherrypy.quickstart(MessageSender())#, config=config)
