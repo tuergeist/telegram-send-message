@@ -95,4 +95,4 @@ def register_webhook():
 
 #register_webhook()
 #start_thread
-cherrypy.quickstart(MessageSender())#, config=config)
+cherrypy.quickstart(MessageSender(), config=config)
