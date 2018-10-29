@@ -25,8 +25,8 @@ def get_updates():
     count = 0
     url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/getUpdates'
 
-    while count < 10:
-        time.sleep(3)
+    while count < 100:
+        time.sleep(5)
         count += 1
 
         r = requests.get(url)
@@ -51,6 +51,10 @@ class MessageSender(object):
     def send(self, message=None):
         if message is None:
             raise cherrypy.HTTPError(400, message="need a message as parameter")
+
+    @cherrypy.expose
+    def callback(self):
+        print(cherrypy.request.params)
 
 config = {
     'global': {
