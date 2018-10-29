@@ -7,6 +7,7 @@ name = "pypi"
 CherryPy = "==3.8.0"
 "Jinja2" = "==2.7.3"
 "psycopg2-binary" = "*"
+requests = "*"
 
 [dev-packages]
 
