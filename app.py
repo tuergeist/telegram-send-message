@@ -58,10 +58,10 @@ class MessageSender(object):
             raise cherrypy.HTTPError(400, message="need a message as parameter")
 
     @cherrypy.expose
-    def callback(self, *args, **kwargs):
-        print('cALLBACK', cherrypy.request)
-        print(args)
-        print(kwargs)
+    def callback(self, update_id, message):
+        print('cALLBACK')
+        print(update_id)
+        print(message)
 
 config = {
     'global': {
@@ -86,7 +86,7 @@ def start_thread():
 def _register_webhook():
     time.sleep(15)
     url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/setWebhook'
-    r= requests.get(url, params={url: CALLBACK_URL})
+    r= requests.get(url,  data={url: CALLBACK_URL})
     print(r.status_code, r.headers['content-type'], r.encoding)
     print(r.text)
 
