@@ -30,6 +30,11 @@ class MessageSender(object):
     def test(self):
         return 'test'
 
+    @cherrypy.expose
+    def send(self, message=None):
+        if message is None:
+            raise cherrypy.HTTPError(400, message="need a message as parameter")
+
 config = {
     'global': {
         'server.socket_host': '0.0.0.0',
