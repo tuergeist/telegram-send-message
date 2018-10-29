@@ -14,6 +14,8 @@ CREATE TABLE users(
     username text
 )
 """)
+conn.commit()
+
 
 class HelloWorld(object):
     @cherrypy.expose
