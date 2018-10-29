@@ -9,6 +9,7 @@ env = Environment(loader=FileSystemLoader('html'))
 
 DATABASE_URL = os.environ['DATABASE_URL']
 TELEGRAM_BOT = os.environ['TELEGRAM_BOT']
+CALLBACK_URL = os.environ['CALLBACK_URL']
 
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 cur = conn.cursor()
@@ -69,10 +70,18 @@ config = {
 }
 
 
+def start_thread():
+    try:
+       _thread.start_new_thread( get_updates, () )
+    except:
+       print("Error: unable to start thread")
 
-try:
-   _thread.start_new_thread( get_updates, () )
-except:
-   print("Error: unable to start thread")
+def register_webhook():
+    url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/setWebhook'
+    r= requests.get(url, params={url: CALLBACK_URL})
+    print(r.status_code, r.headers['content-type'], r.encoding)
+    print(r.text)
 
+register_webhook()
+#start_thread
 cherrypy.quickstart(MessageSender(), config=config)
