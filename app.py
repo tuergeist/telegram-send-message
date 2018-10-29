@@ -1,6 +1,7 @@
 import cherrypy
 import os
 import psycopg2
+import requests
 import _thread, time
 from jinja2 import Environment, FileSystemLoader
 
@@ -19,11 +20,19 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 conn.commit()
 
+
 def get_updates():
     count = 0
-    while count < 5:
-        time.sleep(1)
+    url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/getUpdates'
+
+    while count < 10:
+        time.sleep(3)
         count += 1
+
+        r = requests.get(url)
+        print(r.status_code, r.headers['content-type'], r.encoding)
+        print(r.text)
+        print(r.json())
         print(count)
 
 
