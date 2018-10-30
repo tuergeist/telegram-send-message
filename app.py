@@ -70,12 +70,13 @@ class MessageSender(object):
         user_id = data['message']['from']['id']
         if text == '/list':
             try:
-                self.send(user_id, "Registered users:")
+                msg = "Registered users:\n"
                 query = """SELECT * FROM  users"""
                 cur.execute(query)
                 for r in cur:
                     print(r)
-                    self.send(user_id, " * {} ({})".format(r[1], r[0]))
+                    msg += " * {} ({})\n".format(r[1], r[0])
+                self.send(user_id, msg)
             except Exception as e:
                 print('Error ', e)
 
@@ -102,7 +103,7 @@ class MessageSender(object):
                 conn.commit()
             except Exception as e:
                 print('Error ', e)
-            self.send(user_id, "Bye bye " + user_name)
+            self.send(user_id, "Bye bye ")
 
 config = {
     'global': {
