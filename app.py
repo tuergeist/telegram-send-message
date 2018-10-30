@@ -67,17 +67,20 @@ class MessageSender(object):
         print(data)
 
         text = data['message']['text']
+        user_id = data['message']['from']['id']
         if text == '/list':
             try:
+                self.send(user_id, "Registered users:")
                 query = """SELECT * FROM  users"""
                 cur.execute(query)
                 for r in cur:
                     print(r)
+                    self.send(user_id, " * {} ({})".format(r[1], r[0]))
             except Exception as e:
                 print('Error ', e)
+
         if text == '/subscribe':
             try:
-                user_id = data['message']['from']['id']
                 user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['last_name']
                 query = """
                     INSERT INTO users (id, username) VALUES ({}, '{}')
@@ -88,6 +91,18 @@ class MessageSender(object):
             except Exception as e:
                 print('Error ', e)
             self.send(user_id, "Welcome " + user_name)
+
+        if text == '/unsubscribe':
+            try:
+                query = """
+                    DELETE FROM users WHERE id={}
+                """.format(user_id)
+                print(query)
+                cur.execute(query)
+                conn.commit()
+            except Exception as e:
+                print('Error ', e)
+            self.send(user_id, "Bye bye " + user_name)
 
 config = {
     'global': {
