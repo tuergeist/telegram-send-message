@@ -64,7 +64,7 @@ class MessageSender(object):
         print('CALLBACK')
         print(data)
 
-        text = data['text']
+        text = data['message']['text']
         if text == '/subscribe':
             try:
                 user_id = data['message']['from']['id']
