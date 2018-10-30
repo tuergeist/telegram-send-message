@@ -69,12 +69,14 @@ class MessageSender(object):
             try:
                 user_id = data['message']['from']['id']
                 user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['first_name']
-                cur.execute("""
+                query = """
                     INSERT INTO users (id, username) VALUES ({}, '{}')
-                """.format(user_id, user_name))
+                """.format(user_id, user_name)
+                print(query)
+                cur.execute(query)
                 conn.commit()
-            except:
-                print('Error')
+            except Exception as e:
+                print('Error ', e)
 
 config = {
     'global': {
