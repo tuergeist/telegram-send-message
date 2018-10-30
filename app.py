@@ -67,6 +67,14 @@ class MessageSender(object):
         print(data)
 
         text = data['message']['text']
+        if text == '/list':
+            try:
+                query = """SELECT * FROM  users"""
+                resultset = cur.execute(query)
+                for r in resultset:
+                    print(r)
+            except Exception as e:
+                print('Error ', e)
         if text == '/subscribe':
             try:
                 user_id = data['message']['from']['id']
