@@ -53,9 +53,11 @@ class MessageSender(object):
         print(r.text)
 
     @cherrypy.expose
-    def send(self, message=None):
+    def send(self, user_id, message=None):
         if message is None:
             raise cherrypy.HTTPError(400, message="need a message as parameter")
+        r = telegram_request('sendMessage', {'chat_id': user_id, 'message': message})
+        print(r.text)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -68,15 +70,16 @@ class MessageSender(object):
         if text == '/subscribe':
             try:
                 user_id = data['message']['from']['id']
-                user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['first_name']
+                user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['last_name']
                 query = """
                     INSERT INTO users (id, username) VALUES ({}, '{}')
                 """.format(user_id, user_name)
-                print(query)
+                #print(query)
                 cur.execute(query)
                 conn.commit()
             except Exception as e:
                 print('Error ', e)
+            self.send(user_id, "Welcome " + user_name)
 
 config = {
     'global': {
@@ -101,7 +104,7 @@ def start_thread():
 def _register_webhook():
     time.sleep(15)
     url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/setWebhook'
-    r= requests.get(url,  data={url: CALLBACK_URL})
+    r= requests.get(url,  data={'url': CALLBACK_URL})
     print(r.status_code, r.headers['content-type'], r.encoding)
     print(r.text)
 
@@ -109,6 +112,6 @@ def _register_webhook():
 def register_webhook():
     _thread.start_new_thread(_register_webhook, ())
 
-#register_webhook()
+register_webhook()
 #start_thread
 cherrypy.quickstart(MessageSender(), config=config)
