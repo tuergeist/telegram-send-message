@@ -53,10 +53,10 @@ class MessageSender(object):
         print(r.text)
 
     @cherrypy.expose
-    def send(self, user_id, message=None):
+    def send(self, user_id, message):
         if message is None:
             raise cherrypy.HTTPError(400, message="need a message as parameter")
-        r = telegram_request('sendMessage', {'chat_id': user_id, 'message': message})
+        r = telegram_request('sendMessage', {'chat_id': user_id, 'text': message})
         print(r.text)
 
     @cherrypy.expose
