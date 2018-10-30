@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 
 
-def telegram_request(endpoint, params={}):
+def telegram_request(endpoint, params=None):
     url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/' + endpoint
     r = requests.get(url, params=params)
     return r
@@ -61,8 +61,20 @@ class MessageSender(object):
     @cherrypy.tools.json_in()
     def callback(self):
         data = cherrypy.request.json
-        print('cALLBACK')
+        print('CALLBACK')
         print(data)
+
+        text = data['text']
+        if text == '/subscribe':
+            try:
+                user_id = data['message']['from']['id']
+                user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['first_name']
+                cur.execute("""
+                    INSERT INTO users (id, username) VALUES ({}, '{}')
+                """.format(user_id, user_name))
+                conn.commit()
+            except:
+                print('Error')
 
 config = {
     'global': {
