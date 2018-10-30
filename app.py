@@ -70,8 +70,8 @@ class MessageSender(object):
         if text == '/list':
             try:
                 query = """SELECT * FROM  users"""
-                resultset = cur.execute(query)
-                for r in resultset:
+                cur.execute(query)
+                for r in cur:
                     print(r)
             except Exception as e:
                 print('Error ', e)
