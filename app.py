@@ -43,7 +43,12 @@ def get_updates():
 class MessageSender(object):
     @cherrypy.expose
     def index(self):
-        data_to_show = ['Hello', 'world']
+        data_to_show = []
+        query = """SELECT * FROM  users"""
+        cur.execute(query)
+        for r in cur:
+            data_to_show.append("{} ({})".format(r[1], r[0]))
+
         tmpl = env.get_template('index.html')
         return tmpl.render(data=data_to_show)
 
