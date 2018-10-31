@@ -5,21 +5,12 @@ import requests
 import _thread, time
 from jinja2 import Environment, FileSystemLoader
 
-env = Environment(loader=FileSystemLoader('html'))
-
 DATABASE_URL = os.environ['DATABASE_URL']
 TELEGRAM_BOT = os.environ['TELEGRAM_BOT']
 CALLBACK_URL = os.environ['CALLBACK_URL']
 
+env = Environment(loader=FileSystemLoader('html'))
 conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-cur = conn.cursor()
-cur.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id integer PRIMARY KEY,
-    username text
-)
-""")
-conn.commit()
 
 
 def telegram_request(endpoint, params=None):
@@ -28,25 +19,58 @@ def telegram_request(endpoint, params=None):
     return r
 
 
-def get_updates():
-    count = 0
-    while count < 100:
-        time.sleep(5)
-        count += 1
-        r = telegram_request('getUpdates')
-        print(r.status_code, r.headers['content-type'], r.encoding)
-        print(r.text)
-        print(r.json())
-        print(count)
+class User(object):
+    def __init__(self, conn):
+        self.conn = conn
+        self.cur = conn.cursor()
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id integer PRIMARY KEY,
+            username text
+        )
+        """)
+        self.conn.commit()
+
+    def create(self, user_id, user_name):
+        try:
+            query = """
+                INSERT INTO users (id, username) VALUES ({}, '{}')
+            """.format(user_id, user_name)
+            # print(query)
+            self.cur.execute(query)
+            self.conn.commit()
+        except Exception as e:
+            print('Error ', e)
+
+    def get_all(self):
+        """
+
+        :return: [(id, username),()]
+        """
+        all = []
+        query = """SELECT * FROM  users"""
+        self.cur.execute(query)
+        for r in self.cur:
+            all.append(r)
+        return all
+
+    def delete(self, user_id):
+        query = """
+        DELETE FROM users WHERE id={}
+        """.format(user_id)
+        print(query)
+        self.cur.execute(query)
+        conn.commit()
 
 
 class MessageSender(object):
+    def __init__(self, user):
+        self.user = user
+
     @cherrypy.expose
     def index(self):
         data_to_show = []
-        query = """SELECT * FROM  users"""
-        cur.execute(query)
-        for r in cur:
+        for r in self.user.get_all():
             data_to_show.append("{} ({})".format(r[1], r[0]))
 
         tmpl = env.get_template('index.html')
@@ -74,41 +98,21 @@ class MessageSender(object):
         text = data['message']['text']
         user_id = data['message']['from']['id']
         if text == '/list':
-            try:
-                msg = "Registered users:\n"
-                query = """SELECT * FROM  users"""
-                cur.execute(query)
-                for r in cur:
-                    print(r)
-                    msg += " * {} ({})\n".format(r[1], r[0])
-                self.send(user_id, msg)
-            except Exception as e:
-                print('Error ', e)
+            msg = "Registered users:\n"
+            for r in self.user.get_all():
+                print(r)
+                msg += " * {} ({})\n".format(r[1], r[0])
+            self.send(user_id, msg)
 
         if text == '/subscribe':
-            try:
-                user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['last_name']
-                query = """
-                    INSERT INTO users (id, username) VALUES ({}, '{}')
-                """.format(user_id, user_name)
-                #print(query)
-                cur.execute(query)
-                conn.commit()
-            except Exception as e:
-                print('Error ', e)
+            user_name = data['message']['from']['first_name'] + ' ' + data['message']['from']['last_name']
+            self.user.create(user_id, user_name)
             self.send(user_id, "Welcome " + user_name)
 
         if text == '/unsubscribe':
-            try:
-                query = """
-                    DELETE FROM users WHERE id={}
-                """.format(user_id)
-                print(query)
-                cur.execute(query)
-                conn.commit()
-            except Exception as e:
-                print('Error ', e)
+            self.user.delete(user_id)
             self.send(user_id, "Bye bye ")
+
 
 config = {
     'global': {
@@ -123,13 +127,6 @@ config = {
 }
 
 
-def start_thread():
-    try:
-       _thread.start_new_thread( get_updates, () )
-    except:
-       print("Error: unable to start thread")
-
-
 def _register_webhook():
     time.sleep(15)
     url = 'https://api.telegram.org/' + TELEGRAM_BOT + '/setWebhook'
@@ -141,6 +138,6 @@ def _register_webhook():
 def register_webhook():
     _thread.start_new_thread(_register_webhook, ())
 
+
 register_webhook()
-#start_thread
-cherrypy.quickstart(MessageSender(), config=config)
+cherrypy.quickstart(MessageSender(User(conn)), config=config)
